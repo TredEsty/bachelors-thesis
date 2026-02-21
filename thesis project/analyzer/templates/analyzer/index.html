@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie AI Analyzer</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        /* Tailwind typography fixes for AI output */
+        .ai-content h1, .ai-content h2, .ai-content h3 { font-weight: 700; color: #818cf8; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+        .ai-content h3 { font-size: 1.25rem; }
+        .ai-content p { margin-bottom: 1rem; }
+        .ai-content ul { list-style-type: disc; margin-left: 1.5rem; margin-bottom: 1rem; }
+        .ai-content li { margin-bottom: 0.25rem; }
+        .ai-content strong { color: #f8fafc; }
+    </style>
+</head>
+<body class="p-6 md:p-12 font-sans bg-[#020617] text-white min-h-screen">
+    <div class="max-w-4xl mx-auto">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-black tracking-tighter mb-2 bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">
+                MOVIE ANALYZER
+            </h1>
+        </header>
+
+        <div id="search-section">
+            <form id="movie-form" action="" method="GET" class="relative mb-8 loader-trigger">
+                <input type="text" name="query" value="{{ query }}" required placeholder="Search Movie or Series..." 
+                       class="w-full bg-slate-900/50 border border-slate-700 rounded-2xl py-5 px-8 text-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                <button type="submit" class="absolute right-3 top-3 bg-indigo-600 hover:bg-indigo-500 px-6 py-2.5 rounded-xl font-bold transition-all">
+                    Search
+                </button>
+            </form>
+        </div>
+
+        <div id="loading-state" class="hidden flex-col items-center justify-center py-20 animate-pulse">
+            <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-6"></div>
+            <h2 class="text-2xl font-bold text-indigo-300">Processing Request...</h2>
+            <p class="text-slate-500 mt-2">Synchronizing data or generating analysis. Please wait.</p>
+        </div>
+
+        <div id="content-section">
+            {% if results and not analysis %}
+                <h3 class="text-xl font-bold text-slate-300 mb-4">Select a title to analyze:</h3>
+                <div class="grid gap-3">
+                    {% for movie in results %}
+                        <a href="?query={{ query }}&tconst={{ movie.tconst }}" class="glass p-5 rounded-xl hover:bg-white/10 transition-all flex justify-between items-center loader-trigger group">
+                            <div>
+                                <span class="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors">{{ movie.title }}</span>
+                                <span class="text-slate-500 ml-2">({{ movie.year|default:"N/A" }})</span> 
+                            </div>
+                            <span class="bg-indigo-600/20 text-indigo-400 px-4 py-2 rounded-lg text-sm font-semibold group-hover:bg-indigo-600 group-hover:text-white transition-all">
+                                Analyze
+                            </span>
+                        </a>
+                    {% endfor %}
+                </div>
+            
+            {% elif query and not results and not analysis %}
+                <div class="text-center py-10">
+                    <p class="text-slate-400 text-lg">No movies found matching "{{ query }}".</p>
+                </div>
+            {% endif %}
+
+            {% if analysis %}
+                <div class="glass rounded-3xl p-8 border border-white/10 bg-white/5 backdrop-blur-xl shadow-2xl">
+                    <div class="ai-content text-slate-300 leading-relaxed text-lg">
+                        {{ analysis|safe }}
+                    </div>
+                    <div class="mt-8 pt-6 border-t border-white/10 flex gap-4">
+                        <a href="?query={{ query }}" class="text-indigo-400 hover:text-indigo-300 font-semibold px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                            ← Back to "{{ query }}" results
+                        </a>
+                        <a href="/" class="text-slate-400 hover:text-slate-300 font-semibold px-4 py-2 rounded-lg hover:bg-white/5 transition-colors">
+                            Clear Search
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        const loading = document.getElementById('loading-state');
+        const contentSection = document.getElementById('content-section');
+        
+        // Target anything with 'loader-trigger' (both the form submission and the result links)
+        const triggers = document.querySelectorAll('.loader-trigger');
+
+        triggers.forEach(trigger => {
+            trigger.addEventListener(trigger.tagName === 'FORM' ? 'submit' : 'click', () => {
+                // Hide the content (results/analysis) and show the loader
+                if(contentSection) contentSection.classList.add('hidden');
+                loading.classList.remove('hidden');
+                loading.classList.add('flex');
+            });
+        });
+    </script>
+</body>
+</html>

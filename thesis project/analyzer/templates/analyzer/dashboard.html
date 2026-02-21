@@ -1,0 +1,53 @@
+<form method="GET">
+    <input type="text" name="q" value="{{ query }}" placeholder="Search movie title...">
+    <button type="submit">Search</button>
+</form>
+
+<hr>
+
+{% if results %}
+<table border="1" style="width:100%; text-align: left;">
+    <thead>
+        <tr>
+            <th>Title (Click to Analyze)</th>
+            <th>Year</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for movie in results %}
+        <tr>
+            <td>
+                <a href="?q={{ query }}&action=analyze&title={{ movie.title }}">
+                    <strong>{{ movie.title }}</strong>
+                </a>
+            </td>
+            <td>{{ movie.year }}</td>
+            <td>
+                {% if movie.is_cached %}
+                    <span style="color: green;">✓ Cached</span>
+                {% else %}
+                    <span style="color: gray;">Not Analyzed</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if movie.is_cached %}
+                <a href="?q={{ query }}&action=delete_cache&title={{ movie.title }}" 
+                   style="color: red; font-size: 0.8em;">
+                   Delete Cache
+                </a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+{% if analysis_report %}
+<div style="margin-top: 30px; padding: 20px; border: 1px solid #ccc; background: #f9f9f9;">
+    <h2>AI Analysis Report</h2>
+    {{ analysis_report|safe }}
+</div>
+{% endif %}
